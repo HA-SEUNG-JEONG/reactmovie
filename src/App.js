@@ -1,34 +1,36 @@
 import { useState, useEffect } from "react";
 
-function App() {
-  const [counter, setValue] = useState(0);
-  const [keyword, setKeword] = useState("");
-  const onClick = () => setValue((prev) => prev + 1);
-  const onChange = (event) => setKeword(event.target.value);
-  console.log("I run all the time");
-  useEffect(() => {
-    console.log("I run only once");
-  }, []);
-  useEffect(() => {
-    console.log("I run when 'keyword' change");
-  }, [keyword]);
-  useEffect(() => {
-    console.log("I run when 'counter' change");
-  }, [counter]);
-  useEffect(() => {
-    console.log("I run when 'keyword & counter' change");
-  }, [keyword, counter]);
+function Hello() {
+  // function destroyFn() {
+  //   console.log("destroyed");
+  // }
+  // function useEffectFn() {
+  //   console.log("created");
+  //   return destroyFn; //component가 언제 파괴되는지 알고싶으면 useEffectFn 실행 후에 destroyFn을 호출하면 된다.
+  // }
 
+  // useEffect(() => {
+  //   console.log("hi");
+  //   return () => console.log("bye");
+  // }, []);
+
+  useEffect(() => {
+    console.log("hi");
+    return function () {
+      console.log("bye");
+    };
+  }, []);
+
+  return <h1>Hello</h1>;
+}
+
+function App() {
+  const [showing, setShowing] = useState(false);
+  const onClick = () => setShowing((prev) => !prev);
   return (
     <div>
-      <input
-        value={keyword}
-        onChange={onChange}
-        type="text"
-        placeholder="Search here...."
-      />
-      <h1>{counter}</h1>
-      <button onClick={onClick}>Click me</button>
+      {showing ? <Hello /> : null}
+      <button onClick={onClick}>{showing ? "Hide" : "Show"}</button>
     </div>
   );
 }
