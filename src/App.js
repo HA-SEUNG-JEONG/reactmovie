@@ -1,36 +1,29 @@
-import { useState, useEffect } from "react";
-
-function Hello() {
-  // function destroyFn() {
-  //   console.log("destroyed");
-  // }
-  // function useEffectFn() {
-  //   console.log("created");
-  //   return destroyFn; //component가 언제 파괴되는지 알고싶으면 useEffectFn 실행 후에 destroyFn을 호출하면 된다.
-  // }
-
-  // useEffect(() => {
-  //   console.log("hi");
-  //   return () => console.log("bye");
-  // }, []);
-
-  useEffect(() => {
-    console.log("hi");
-    return function () {
-      console.log("bye");
-    };
-  }, []);
-
-  return <h1>Hello</h1>;
-}
+import { useState } from "react";
 
 function App() {
-  const [showing, setShowing] = useState(false);
-  const onClick = () => setShowing((prev) => !prev);
+  const [todo, setTodo] = useState("");
+  const [todos, setTodos] = useState([]);
+  const onChange = (event) => setTodo(event.target.value);
+  const onSubmit = (event) => {
+    event.preventDefault();
+    if (todo === "") {
+      return;
+    }
+    setTodo(""); //todo 값이 비어있지 않다면 Form 제출 후 input 값 비워버림
+    setTodos((currentArray) => [todo, ...currentArray]); //기존 todo에 currentArray 배열의 원소들을 집어넣어서 새로운 array를 만들고자 할 때 ...를 앞에다 붙이면 된다.
+  };
   return (
     <div>
-      {showing ? <Hello /> : null}
-      <button onClick={onClick}>{showing ? "Hide" : "Show"}</button>
+      <h1>My To Dos ({todos.length})</h1>
+      <form onSubmit={onSubmit}>
+        <input
+          onChange={onChange}
+          value={todo}
+          type="text"
+          placeholder="Write your to do..."
+        />
+        <button>Add To do</button>
+      </form>
     </div>
   );
 }
