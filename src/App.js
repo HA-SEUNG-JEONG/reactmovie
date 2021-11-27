@@ -1,37 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
-  const [todo, setTodo] = useState("");
-  const [todos, setTodos] = useState([]);
-  const onChange = (event) => setTodo(event.target.value);
-  const onSubmit = (event) => {
-    event.preventDefault();
-    if (todo === "") {
-      return;
-    }
-    setTodos((currentArray) => [todo, ...currentArray]); //기존 todo에 currentArray 배열의 원소들을 집어넣어서 새로운 array를 만들고자 할 때 ...를 앞에다 붙이면 된다.
-    setTodo(""); //todo 값이 비어있지 않다면 Form 제출 후 input 값 비워버림
+  const [money, setMoney] = useState(0);
+  const [coin, setCoin] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState([]);
+  useEffect(() => {
+    const coinsFunc = async () => {
+      const res = await fetch("https://api.coinpaprika.com/v1/tickers");
+      const json = await res.json();
+      const coins = json.slice(0, 100);
+
+      setCoins(coins);
+      setCoin(coins[0]);
+      setLoading(false);
+    };
+    coinsFunc();
+  }, []);
+  const onChange = (event) => {
+    const selected = event.target.value;
+    const coin = coins.filter((current) => {
+      const len = current.name.length;
+      const slice = selected.slice(0, len);
+      return slice === current.name;
+    });
+    setCoin(coin[0]);
   };
-  console.log(todos);
-  console.log(todos.map((item, index) => <li key={index}>{item}</li>));
+
+  const onChanges = (event) => {
+    const money = Number(event.target.value);
+    setMoney(money);
+  };
   return (
     <div>
-      <h1>My To Dos ({todos.length})</h1>
-      <form onSubmit={onSubmit}>
-        <input
-          onChange={onChange}
-          value={todo}
-          type="text"
-          placeholder="Write your to do..."
-        />
-        <button>Add To do</button>
-      </form>
+      <h1>The Coins Count: {loading ? "0" : `(${coins.length})`}</h1>
+      {loading ? (
+        <strong>Loading...</strong>
+      ) : (
+        <select onChange={onChange}>
+          {coins.map((coin, id) => (
+            <option key={id}>
+              {coin.name} ({coin.symbol})
+            </option>
+          ))}
+        </select>
+      )}
+      <br />
+      <label htmlFor="money">How much Money Do you have?</label>
+      <br />
+      <input id="money" value={money} onChange={onChanges} />
       <hr />
-      <ul>
-        {todos.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
-      </ul>
+      {coin ? (
+        <div>
+          <h1>
+            {coin.name} {coin.symbol}
+          </h1>
+          <span>{coin.first_data_at} / </span>
+          <span>{coin.last_updated}</span>
+          <p>{coin.quotes.USD.percent_change_24h}</p>
+          <span>${coin.quotes.USD.price}</span>
+
+          {money === 0 || "" || null ? (
+            ""
+          ) : (
+            <h2>You can buy {money / coin.quotes.USD.price}</h2>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
