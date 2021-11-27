@@ -1,72 +1,41 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useState } from "react/cjs/react.development";
 
 function App() {
-  const [money, setMoney] = useState(0);
-  const [coin, setCoin] = useState("");
   const [loading, setLoading] = useState(true);
-  const [coins, setCoins] = useState([]);
+  const [movies, setMovies] = useState([]);
+  const getMovies = async () => {
+    const json = await (
+      await fetch(
+        `https://yts.mx/api/v2/list_movies.json?minimum_rating=8.8&sort_by=year`
+      )
+    ).json();
+    setMovies(json.data.movies);
+    setLoading(false);
+  };
   useEffect(() => {
-    const coinsFunc = async () => {
-      const res = await fetch("https://api.coinpaprika.com/v1/tickers");
-      const json = await res.json();
-      const coins = json.slice(0, 100);
-
-      setCoins(coins);
-      setCoin(coins[0]);
-      setLoading(false);
-    };
-    coinsFunc();
+    getMovies();
   }, []);
-  const onChange = (event) => {
-    const selected = event.target.value;
-    const coin = coins.filter((current) => {
-      const len = current.name.length;
-      const slice = selected.slice(0, len);
-      return slice === current.name;
-    });
-    setCoin(coin[0]);
-  };
 
-  const onChanges = (event) => {
-    const money = Number(event.target.value);
-    setMoney(money);
-  };
   return (
     <div>
-      <h1>The Coins Count: {loading ? "0" : `(${coins.length})`}</h1>
       {loading ? (
-        <strong>Loading...</strong>
+        <h1>Loading...</h1>
       ) : (
-        <select onChange={onChange}>
-          {coins.map((coin, id) => (
-            <option key={id}>
-              {coin.name} ({coin.symbol})
-            </option>
-          ))}
-        </select>
+        movies.map((movie) => (
+          <div key={movie.id}>
+            <img src={movie.medium_cover_image} />
+            <h2>{movie.title}</h2>
+            <p>{movie.summary}</p>
+            <ul>
+              {movie.genres.map((g) => (
+                <li key={g}>{g}</li>
+              ))}
+            </ul>
+            <div></div>
+          </div>
+        ))
       )}
-      <br />
-      <label htmlFor="money">How much Money Do you have?</label>
-      <br />
-      <input id="money" value={money} onChange={onChanges} />
-      <hr />
-      {coin ? (
-        <div>
-          <h1>
-            {coin.name} {coin.symbol}
-          </h1>
-          <span>{coin.first_data_at} / </span>
-          <span>{coin.last_updated}</span>
-          <p>{coin.quotes.USD.percent_change_24h}</p>
-          <span>${coin.quotes.USD.price}</span>
-
-          {money === 0 || "" || null ? (
-            ""
-          ) : (
-            <h2>You can buy {money / coin.quotes.USD.price}</h2>
-          )}
-        </div>
-      ) : null}
     </div>
   );
 }
